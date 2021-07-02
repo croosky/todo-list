@@ -1,0 +1,248 @@
+type: edu
+files:
+- name: src/index.html
+  visible: true
+  text: |
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Document</title>
+    </head>
+    <body>
+
+    </body>
+    </html>
+  learner_created: false
+- name: test/test.js
+  visible: false
+  text: |
+    const puppeteer = require('puppeteer');
+    const path = require('path');
+    // '..' since we're in the test/ subdirectory; learner is supposed to have src/index.html
+    const pagePath = 'file://' + path.resolve(__dirname, '../src/index.html');
+    const hs = require('hs-test-web');
+    const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+    async function stageTest() {
+
+        const browser = await puppeteer.launch({
+            headless: false,
+            defaultViewport: null,
+            args: ['--start-maximized', '--disable-infobar'],
+            ignoreDefaultArgs: ['--enable-automation']
+        });
+
+        const page = await browser.newPage();
+        await page.goto(pagePath);
+
+        await sleep(1000);
+
+        let result = await hs.testPage(page,
+            // Test #1 - Check title
+            () => {
+                if (document.title !== 'To-Do List') {
+                    return hs.wrong("The title of the page should be 'To-Do List'")
+                }
+                return hs.correct();
+            },
+
+            // Test #2 - Check elements
+            () => {
+                const inputField = document.getElementById("input-task")
+                if (inputField === null || inputField.tagName !== 'INPUT')
+                    return hs.wrong("Can't find input field with id '#input-task'")
+
+                const addButton = document.getElementById("add-task-button")
+                if (addButton === null || addButton.tagName !== 'BUTTON')
+                    return hs.wrong("Can't find button with id '#add-task-button'")
+
+                this.taskList = document.getElementById("task-list")
+                if (this.taskList === null || this.taskList.tagName !== 'UL')
+                    return hs.wrong("Can't find <ul> tag with id '#task-list'")
+
+                return hs.correct();
+            },
+
+            // Test #3 - Check each task in task list
+            () => {
+
+                const tasks = this.taskList.getElementsByTagName("li")
+                if (tasks.length !== 3)
+                    return hs.wrong("Inside the <ul> tag should be 3 <li> elements!")
+
+                for (let task of tasks) {
+                    const checkbox = task.querySelector("input[type=checkbox]")
+                    if (checkbox === null)
+                        return hs.wrong("Inside each <li> tag should one <input> tag with 'checkbox' type")
+
+                    const taskName = task.querySelector("span.task")
+                    if (taskName === null)
+                        return hs.wrong("Inside each <li> tag should one <spane> tag with 'task' class")
+
+                    const deleteButton = task.querySelector("button.delete-btn")
+                    if (deleteButton === null)
+                        return hs.wrong("Inside each <li> tag should one <button> tag with 'delete-btn' class")
+                }
+
+                return hs.correct();
+            },
+
+            // Test #4 - Test adding new task
+            () => {
+
+                const inputField = document.getElementById("input-task")
+                if (inputField.tagName !== 'INPUT')
+                    return hs.wrong("Can't find input field with id '#input-task'")
+
+                inputField.value = "New task for the test purpose"
+
+                const addButton = document.getElementById("add-task-button")
+                if (addButton.tagName !== 'BUTTON')
+                    return hs.wrong("Can't find button with id '#add-task-button'")
+
+                addButton.click()
+
+                const tasks = this.taskList.getElementsByTagName("li")
+                if (tasks.length !== 4)
+                    return hs.wrong("After adding a new task to the To-Do list, there should be 4 <li> tags inside the <ul> list")
+
+                for (let task of tasks) {
+
+                    const taskName = task.querySelector("span.task")
+                    if (taskName === null)
+                        return hs.wrong("Inside each <li> tag should one <spane> tag with 'task' class")
+
+                    if (taskName.textContent === "New task for the test purpose") {
+                        return hs.correct()
+                    }
+                }
+
+                return hs.wrong("Can't find task with name 'New task for the test purpose'.\n" +
+                    "The task name should be placed in <span> tag with class 'task'!")
+            },
+
+            // Test #5 - Deleting task
+            () => {
+
+                let tasks = this.taskList.getElementsByTagName("li")
+
+                for (let task of tasks) {
+                    const taskName = task.querySelector("span.task")
+                    if (taskName === null)
+                        return hs.wrong("Inside each <li> tag should one <spane> tag with 'task' class")
+
+                    if (taskName.textContent === "New task for the test purpose") {
+                        const deleteButton = task.querySelector("button.delete-btn")
+                        if (deleteButton === null)
+                            return hs.wrong("Inside each <li> tag should one <button> tag with 'delete-btn' class")
+                        deleteButton.click()
+                        break
+                    }
+                }
+
+                tasks = this.taskList.getElementsByTagName("li")
+
+                for (let task of tasks) {
+                    const taskName = task.querySelector("span.task")
+                    if (taskName === null)
+                        return hs.wrong("Inside each <li> tag should one <spane> tag with 'task' class")
+
+                    if (taskName.textContent === "New task for the test purpose") {
+                        return hs.wrong("After deleting a task with name 'New task for the test purpose' it is still in the task list!")
+                    }
+                }
+
+                return hs.correct()
+            }
+        );
+
+        await browser.close();
+        return result;
+    }
+
+
+    jest.setTimeout(30000);
+    test("Test stage", async () => {
+            let result = await stageTest();
+            if (result['type'] === 'wrong') {
+                fail(result['message']);
+            }
+        }
+    );
+  learner_created: false
+- name: src/style.css
+  visible: true
+  text: |
+    body{background-color: antiquewhite;
+        color: #785E51;
+        font-size: 18px;
+    }
+    .btn{
+        background-color: #fce6cdff;
+        color: #785E51;
+        font-size: 13px;
+        font-weight: bold;
+        border: 1px solid #fce6cdff;
+        box-shadow: 4px 4px 0 #f2c8a2;
+    }
+    #container{
+        margin-top: 10%;
+        margin-left: 5%;
+        margin-right: 5%;
+        padding: 1%;
+        background-color: bisque;
+        display: block;
+        box-shadow: 8px 8px 0 #f2c8a2;
+    }
+    #new-task{
+        margin: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        flex-wrap: wrap;
+        height: auto;
+    }
+    #input-task{
+        width:76%;
+        border-radius: 3vw;
+        color:#7D6255;
+        border: 1px solid #fce6cdff;
+        box-shadow: 0 0 0 #f2c8a2;
+    }
+    #add-task-button{
+        width: 20%;
+        float: right;
+        border-radius: 3vw;
+
+    }
+    #task-list{}
+
+    .list-item{
+        display: inline-flex;
+        padding-bottom: 5%;
+    }
+    #task-list{
+        margin: 20px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    .list-item{position: relative;}
+    .checkbox{}
+    .task{ }
+    .delete-btn{
+        border-radius: 50%;
+        position: absolute;
+        right: 5%;
+    }
+  learner_created: true
+- name: src/main.js
+  visible: true
+  learner_created: true
+feedback_link: https://hyperskill.org/projects/183/stages/928/implement#comment
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Thu, 01 Jul 2021 11:58:56 UTC
+record: 2

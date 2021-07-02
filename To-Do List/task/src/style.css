@@ -1,0 +1,62 @@
+body{background-color: antiquewhite;
+    color: #785E51;
+    font-size: 18px;
+}
+.btn{
+    background-color: #fce6cdff;
+    color: #785E51;
+    font-size: 13px;
+    font-weight: bold;
+    border: 1px solid #fce6cdff;
+    box-shadow: 4px 4px 0 #f2c8a2;
+}
+#container{
+    margin-top: 10%;
+    margin-left: 5%;
+    margin-right: 5%;
+    padding: 1%;
+    background-color: bisque;
+    display: block;
+    box-shadow: 8px 8px 0 #f2c8a2;
+}
+#new-task{
+    margin: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    flex-wrap: wrap;
+    height: auto;
+}
+#input-task{
+    width:76%;
+    border-radius: 3vw;
+    color:#7D6255;
+    border: 1px solid #fce6cdff;
+    box-shadow: 0 0 0 #f2c8a2;
+}
+#add-task-button{
+    width: 20%;
+    float: right;
+    border-radius: 3vw;
+
+}
+#task-list{}
+
+.list-item{
+    display: inline-flex;
+    padding-bottom: 5%;
+}
+#task-list{
+    margin: 20px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.list-item{position: relative;}
+.checkbox{}
+.task{ }
+.delete-btn{
+    border-radius: 50%;
+    position: absolute;
+    right: 5%;
+}
